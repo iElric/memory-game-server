@@ -112,15 +112,13 @@ class PairOfTiles extends React.Component {
                 // keep the previous index in a local variable
                 let temp = this.state.prevClickIndex;
                 // this is a default state(we assume successful match), if the latter match happens, the state stay no
-                // change. Otherwise we set a delay and modify the state. In this way, we can spare an extra render.
+                // change. Otherwise we set a delay and modify the state.
                 this.setState({
                     prevClickIndex: -1,
                     allowClick: false
-                }), () => {
-                    console.log(this.state)
-                };
+                });
                 // if two click did not match
-                if (!(this.state.tiles[index] === this.state.tiles[this.state.prevClickIndex])) {
+                if (!(this.state.tiles[index] === this.state.tiles[temp])) {
                     setTimeout(() => this.setState({
                         // make both invisible
                         isVisible: this.map(this.state.isVisible, [index, temp], false),
@@ -131,7 +129,7 @@ class PairOfTiles extends React.Component {
                         console.log(this.state)
                     }), 1000)
                 } else {
-                    this.setState({allowClick: true});
+                    this.setState({allowClick: true}, ()=>console.log(this.state));
                 }
             }
 
