@@ -1,14 +1,60 @@
 /* This file is for your main application css. */
-/*
-@import "~milligram/dist/milligram.css";
-*/
+
 @import "~milligram/dist/milligram";
 
-
-.column > p {
-    padding-top: 10ex;
+.title {
     text-align: center;
+    letter-spacing: 3px;
+    font-size: 40px;
+    font-family: "Comic Sans MS", serif;
 }
+
+.status {
+    text-align: center;
+    letter-spacing: 3px;
+    font-size: 30px;
+    font-family: "Comic Sans MS", serif;
+}
+
+.board {
+    margin: 100px;
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+
+}
+
+.tile {
+    border: 3px solid gray;
+    background-color: darkorange;
+    width: 100px;
+    height: 100px;
+    font-size: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+/* Animated button idea from https://www.w3schools.com/css/tryit.asp?filename=trycss_buttons_animate3*/
+.restart {
+    display: inline-block;
+    padding: 30px 50px;
+    font-size: 24px;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 15px;
+    box-shadow: 0 9px #999;
+}
+
+.restart:hover {background-color: darkred}
+
+.restart:active {
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+}
+
+
 
 
 

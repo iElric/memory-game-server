@@ -18,7 +18,10 @@ class PairOfTiles extends React.Component {
             // only register valid click
             numGuesses: 0,
             // store the previous click(first click), -1 means the next click should be first guess
-            prevClickIndex: -1
+            prevClickIndex: -1,
+            // add allowClick to prevent a bug which you can click a lot of buttons in a row. This is mainly to solve
+            // the setTimout side effect
+            allowClick: true
         }
     }
 
@@ -45,84 +48,90 @@ class PairOfTiles extends React.Component {
         )
     }
 
+    renderTiles(num) {
+        //let that = this;
+        let tiles = [];
+        for (let i = 0; i < num; i++) {
+            tiles.push(this.renderTile(i));
+        }
+        return tiles;
+    }
+
+    // bArray should be an boolean array, and index should be an index array, bool is true or false. Return a copy of
+    // the bArray with every index in index array change to bool value.
+    map(bArray, index, bool) {
+        let copy = bArray.slice();
+        _.each(index, i => {
+            copy[i] = bool;
+        });
+        return copy;
+    }
+
+    reStart() {
+        this.setState({
+            tiles: this.initTiles(),
+            isVisible: Array(16).fill(false),
+            isClickable: Array(16).fill(true),
+            numGuesses: 0,
+            prevClickIndex: -1,
+            allowClick: true
+        })
+    }
+
+    // Control the difficulty of the game by change 24 to a smaller number
+    getScore() {
+        if (this.state.numGuesses <= 24) {
+            return 100;
+        } else {
+            return 100 - (this.state.numGuesses - 24);
+        }
+    }
+
+    isCompleted() {
+        return _.reduce(this.state.isVisible, (m, n) => m && n);
+    }
+
+    //TODO: when each time handleClick called, it should only update the state once which means only one setState should
+    // be called.
     handleClick(index) {
-        if (this.isFirstGuess()) {
+        if (this.state.allowClick && this.state.isClickable[index]) {
+            this.setState({
+                isVisible: this.map(this.state.isVisible, [index], true),
+                isClickable: this.map(this.state.isClickable, [index], false),
+                numGuesses: this.state.numGuesses + 1,
+            });
             // first guess
-            if (this.state.isClickable[index]) {
-                /*this.state.isVisible[index] = true;
-                this.state.isClickable[index] = false;
-                this.state.numGuesses++;
-                this.state.prevClickIndex = index;*/
+            if (this.isFirstGuess()) {
                 this.setState({
-                    //TODO: refactor a function out!!
-                    isVisible: _.map(this.state.isVisible, (t, i) => {
-                        if (i === index) {
-                            return true;
-                        } else {
-                            return t;
-                        }
-                    }),
-                    isClickable: _.map(this.state.isClickable, (t, i) => {
-                        if (i === index) {
-                            return false;
-                        } else {
-                            return t;
-                        }
-                    }),
-                    numGuesses: this.state.numGuesses + 1,
                     prevClickIndex: index
                 }, () => {
                     console.log(this.state);
                 });
-
-            }
-        } else {
-            // second guess
-            if (this.state.isClickable[index]) {
-                // keep the previous index in a local variable since we want to
+            } else {
+                // second guess
+                // keep the previous index in a local variable
                 let temp = this.state.prevClickIndex;
                 // this is a default state(we assume successful match), if the latter match happens, the state stay no
                 // change. Otherwise we set a delay and modify the state. In this way, we can spare an extra render.
                 this.setState({
-                    // set this tile visible
-                    isVisible: _.map(this.state.isVisible, (t, i) => {
-                        if (i === index) {
-                            return true;
-                        } else {
-                            return t;
-                        }
-                    }),
-                    // set this tile not clickable
-                    isClickable: _.map(this.state.isClickable, (t, i) => {
-                        if (i === index) {
-                            return false;
-                        } else {
-                            return t;
-                        }
-                    }),
-                    numGuesses: this.state.numGuesses + 1,
-                    prevClickIndex: -1
-                }), ()=>{console.log(this.state)};
+                    prevClickIndex: -1,
+                    allowClick: false
+                }), () => {
+                    console.log(this.state)
+                };
                 // if two click did not match
                 if (!(this.state.tiles[index] === this.state.tiles[this.state.prevClickIndex])) {
                     setTimeout(() => this.setState({
                         // make both invisible
-                        isVisible: _.map(this.state.isVisible, (t, i) => {
-                            if (i === index || i === temp) {
-                                return false;
-                            } else {
-                                return t;
-                            }
-                        }),
+                        isVisible: this.map(this.state.isVisible, [index, temp], false),
                         // make both clickable
-                        isClickable: _.map(this.state.isClickable, (t, i) => {
-                            if (i === index || i === temp) {
-                                return true;
-                            } else {
-                                return t;
-                            }
-                        }),
-                    },()=>{console.log(this.state)}), 1000)
+                        isClickable: this.map(this.state.isClickable, [index, temp], true),
+                        allowClick: true
+                    }, () => {
+                        console.log(this.state)
+                    }), 1000)
+                } else {
+                    this.setState({allowClick: true});
                 }
             }
 
@@ -131,35 +140,16 @@ class PairOfTiles extends React.Component {
 
     }
 
-
     render() {
         return (
-            //TODO: not really that elegant, may refactor this to a loop
-            <div className="board">
-                <div className="board-row">
-                    {this.renderTile(0)}
-                    {this.renderTile(1)}
-                    {this.renderTile(2)}
-                    {this.renderTile(3)}
+            <div>
+                <p className="title">Tile matching Game</p>
+                <Status guess={this.state.numGuesses} score={this.getScore()} isFinished={this.isCompleted()}/>
+                <div className="board">
+                    {this.renderTiles(16)}
                 </div>
-                <div className="board-row">
-                    {this.renderTile(4)}
-                    {this.renderTile(5)}
-                    {this.renderTile(6)}
-                    {this.renderTile(7)}
-                </div>
-                <div className="board-row">
-                    {this.renderTile(8)}
-                    {this.renderTile(9)}
-                    {this.renderTile(10)}
-                    {this.renderTile(11)}
-                </div>
-                <div className="board-row">
-                    {this.renderTile(12)}
-                    {this.renderTile(13)}
-                    {this.renderTile(14)}
-                    {this.renderTile(15)}
-                </div>
+                <Restart onRestartClick={() => this.reStart()}/>
+
             </div>
         )
     }
@@ -169,8 +159,6 @@ class PairOfTiles extends React.Component {
 // this function render a single tile as a button
 // always start a component name with a capital letter
 function Tile(props) {
-    // TODO: handle the logic that whether this tile should be seen or not. Visibility should only decided by isVisible
-    //  property
     let {value, isVisible, onTileClick} = props;
     if (isVisible) {
         return (
@@ -181,11 +169,32 @@ function Tile(props) {
     } else {
         return (
             <button className="tile" onClick={onTileClick}>
-                {/* do not render value*/}
+                {}
             </button>
         )
     }
+}
 
+function Restart(props) {
+    let {onRestartClick} = props;
+    return (
+        <button className="restart" onClick={onRestartClick}>
+            Restart
+        </button>
+    )
 
 }
 
+// return the status. If game not complete, return number of guesses. Otherwise return guesses and score.
+function Status(props) {
+    let {guess, score, isFinished} = props;
+    if (isFinished) {
+        return (
+            <p className="status">You win!!! Guess: {guess}, Score: {score}</p>
+        )
+    } else {
+        return (
+            <p className="status">Guess: {guess} </p>
+        )
+    }
+}
