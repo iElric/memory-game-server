@@ -3,7 +3,7 @@ server {
     listen [::]:80;
 
     # TODO: This should be your server name.
-    server_name memory.ielric.com;
+    server_name memory1.ielric.com;
 
     location / {
         proxy_pass http://localhost:4791;
