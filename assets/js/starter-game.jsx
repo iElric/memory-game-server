@@ -91,8 +91,6 @@ class PairOfTiles extends React.Component {
         return _.reduce(this.state.isVisible, (m, n) => m && n);
     }
 
-    //TODO: when each time handleClick called, it should only update the state once which means only one setState should
-    // be called.
     handleClick(index) {
         if (this.state.allowClick && this.state.isClickable[index]) {
             this.setState({
