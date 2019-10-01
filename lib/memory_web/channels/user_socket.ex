@@ -2,6 +2,9 @@ defmodule MemoryWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
+  channel "games:*", MemoryWeb.GamesChannel
+
+  ## Channels
   # channel "room:*", MemoryWeb.RoomChannel
 
   # Socket params are passed from the client and can
