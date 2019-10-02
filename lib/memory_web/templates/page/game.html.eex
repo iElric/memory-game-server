@@ -1,0 +1,14 @@
+<script>
+ // set the game parameter in js
+ window.gameName = "<%= @game %>";
+</script>
+
+<div class="row">
+  <div class="column">
+  <!-- a special EEx tag for executing elixir expressions -->
+    <h1>Memory Game: <%= @game %></h1>
+    <div id="root">
+      <p>React app is loading...</p>
+    </div>
+  </div>
+</div>

@@ -21,12 +21,33 @@ defmodule MemoryWeb.GamesChannel do
     end
   end
 
+  # call click
   def handle_in("click", %{"index" => ii}, socket) do
     name = socket.assigns[:name]
     game = Game.click(socket.assigns[:game], ii)
     socket = assign(socket, :game, game)
     BackupAgent.put(name, game)
     {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
+  end
+
+  # call reverse_mismatch
+  # notice handle_in is handle_in/3
+  def handle_in("mismatch", _, socket) do
+    name = socket.assigns[:name]
+    game = Game.reverse_mismatch(socket.assigns[:game])
+    socket = assign(socket, :game, game)
+    BackupAgent.put(name, game)
+    {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
+  end
+
+  # call restart
+  # notice handle_in is handle_in/3
+  def handle_in("restart", nil, socket) do
+    name = socket.assigns[:name]
+    game = Game.new()
+    socket = assign(socket, :game, game)
+    BackupAgent.put(name, game)
+    {:reply, {:ok, %{ "game" => Game.client_view(game)}}, socket}
   end
 
 end

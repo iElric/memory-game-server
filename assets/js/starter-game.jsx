@@ -2,48 +2,41 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 
-export default function game_init(root) {
+export default function game_init(root, channel) {
+    console.log('this is channel', channel);
     // load this PairOfTiles react components into the root DOM
-    ReactDOM.render(<PairOfTiles/>, root);
+    ReactDOM.render(<PairOfTiles channel={channel}/>, root);
 }
 
 class PairOfTiles extends React.Component {
+
     constructor(props) {
         super(props);
-        let tileArray = this.initTiles();
+        this.channel = props.channel;
         this.state = {
-            tiles: tileArray,
-            isVisible: Array(16).fill(false),
-            isClickable: Array(16).fill(true),
-            // only register valid click
+            tiles: [],
             numGuesses: 0,
-            // store the previous click(first click), -1 means the next click should be first guess
-            prevClickIndex: -1,
-            // add allowClick to prevent a bug which you can click a lot of buttons in a row. This is mainly to solve
-            // the setTimout side effect
-            allowClick: true
-        }
+            mismatch: false
+        };
+
+        this.channel.join()
+            .receive("ok", this.getView.bind(this))
+            .receive("error", resp => {
+                console.log("Unable to join", resp)
+            });
     }
 
-    // generate an random array of length 16 with characters from A to H, each characters appear twice
-    initTiles() {
-        let tiles = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F', 'G', 'G', 'H', 'H'];
-        // Returns a shuffled copy of the list, using a version of the Fisher-Yates shuffle
-        return _.shuffle(tiles);
+    // set the initial state
+    getView({game}) {
+        this.setState(game);
     }
-
-    // check if this is a first guess
-    isFirstGuess() {
-        return this.state.prevClickIndex === -1;
-    }
-
 
     renderTile(index) {
         // pass the property to the function component, let the component decide how to render it
         return (
             // When React sees an element representing a user-defined component, it passes JSX attributes to this
             // component as a single object. We call this object “props”.
-            <Tile value={this.state.tiles[index]} isVisible={this.state.isVisible[index]}
+            <Tile value={this.state.tiles[index]}
                   onTileClick={() => this.handleClick(index)}/>
         )
     }
@@ -57,25 +50,8 @@ class PairOfTiles extends React.Component {
         return tiles;
     }
 
-    // bArray should be an boolean array, and index should be an index array, bool is true or false. Return a copy of
-    // the bArray with every index in index array change to bool value.
-    map(bArray, index, bool) {
-        let copy = bArray.slice();
-        _.each(index, i => {
-            copy[i] = bool;
-        });
-        return copy;
-    }
-
     reStart() {
-        this.setState({
-            tiles: this.initTiles(),
-            isVisible: Array(16).fill(false),
-            isClickable: Array(16).fill(true),
-            numGuesses: 0,
-            prevClickIndex: -1,
-            allowClick: true
-        })
+        this.channel.push("restart").receive("ok", this.receiveView.bind(this));
     }
 
     // Control the difficulty of the game by change 24 to a smaller number
@@ -88,52 +64,16 @@ class PairOfTiles extends React.Component {
     }
 
     isCompleted() {
-        return _.reduce(this.state.isVisible, (m, n) => m && n);
+        return _.reduce(this.state.tiles, (m, n) => (m !== "") && (n !== ""));
     }
 
     handleClick(index) {
-        if (this.state.allowClick && this.state.isClickable[index]) {
-            this.setState({
-                isVisible: this.map(this.state.isVisible, [index], true),
-                isClickable: this.map(this.state.isClickable, [index], false),
-                numGuesses: this.state.numGuesses + 1,
-            });
-            // first guess
-            if (this.isFirstGuess()) {
-                this.setState({
-                    prevClickIndex: index
-                }, () => {
-                    console.log(this.state);
-                });
-            } else {
-                // second guess
-                // keep the previous index in a local variable
-                let temp = this.state.prevClickIndex;
-                // this is a default state(we assume successful match), if the latter match happens, the state stay no
-                // change. Otherwise we set a delay and modify the state.
-                this.setState({
-                    prevClickIndex: -1,
-                    allowClick: false
-                });
-                // if two click did not match
-                if (!(this.state.tiles[index] === this.state.tiles[temp])) {
-                    setTimeout(() => this.setState({
-                        // make both invisible
-                        isVisible: this.map(this.state.isVisible, [index, temp], false),
-                        // make both clickable
-                        isClickable: this.map(this.state.isClickable, [index, temp], true),
-                        allowClick: true
-                    }, () => {
-                        console.log(this.state)
-                    }), 1000)
-                } else {
-                    this.setState({allowClick: true}, ()=>console.log(this.state));
-                }
-            }
-
+        this.channel.push("click", {index: index}).receive("ok", this.getView.bind(this));
+        if (this.state.mismatch) {
+            setTimeout(() => {
+                this.channel.push("mismatch").receive("ok", this.getView.bind(this));
+            })
         }
-
-
     }
 
     render() {
@@ -155,20 +95,14 @@ class PairOfTiles extends React.Component {
 // this function render a single tile as a button
 // always start a component name with a capital letter
 function Tile(props) {
-    let {value, isVisible, onTileClick} = props;
-    if (isVisible) {
-        return (
-            <button className="tile" onClick={onTileClick}>
-                {value}
-            </button>
-        )
-    } else {
-        return (
-            <button className="tile" onClick={onTileClick}>
-                {}
-            </button>
-        )
-    }
+    let {value, onTileClick} = props;
+
+    return (
+        <button className="tile" onClick={onTileClick}>
+            {value}
+        </button>
+    )
+
 }
 
 function Restart(props) {

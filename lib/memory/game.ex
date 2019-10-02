@@ -119,10 +119,42 @@ defmodule Memory.Game do
 
   # send a game to browser
   def client_view(game) do
+    tiles = game[:tiles]
+    %{
+      tiles: get_tiles_value(tiles),
+      #isVisible: get_tiles_visibility(tiles),
+      numGuesses: game[:num_guesses],
+      mismatch: game[:mismatch] === nil
+    }
+  end
 
+  # return the index corresponding tile value if this tile visible,
+  # otherwise return ""
+  def get_tiles_value(tiles) do
+    tiles
+    |> Map.to_list()
+    |> Enum.map(
+         fn ({_, tile}) ->
+           if tile["is_visible"] do
+             tile["value"]
+           else
+             ""
+           end
+         end
+       )
 
   end
 
+  # return the visibility list of tiles
+  #def get_tiles_visibility(tiles) do
+    #tiles
+    #|> Map.to_list()
+    #|> Enum.map(
+         #fn ({_, tile}) ->
+           #tile["is_visible"]
+         #end
+       #)
+  #end
 
 end
 

@@ -16,6 +16,11 @@ defmodule MemoryWeb.Router do
   scope "/", MemoryWeb do
     pipe_through :browser # Use the default browser stack
 
+    # call the game function in page_controller.ex, notice we use an atom :game in the path.
+    # Phoenix will take whatever value that appears in that position in the URL and pass a Map with the key game
+    # pointing to that value to the controller.
+    # if if we point the browser at: http://localhost:4000/hello/Frank, the value of ":game" will be "Frank".
+    get "/game/:game", PageController, :game
     get "/", PageController, :index
   end
 
