@@ -12,8 +12,7 @@ defmodule MemoryWeb.GamesChannel do
   # at their destination.
   def join("games:" <> name, payload, socket) do
     if authorized?(payload) do
-      game = Game.new()
-      #game = BackupAgent.get(name) || Game.new()
+      game = BackupAgent.get(name) || Game.new()
 
       socket = socket
                |> assign(:game, game)
@@ -33,7 +32,7 @@ defmodule MemoryWeb.GamesChannel do
     name = socket.assigns[:name]
     game = Game.click(socket.assigns[:game], ii)
     socket = assign(socket, :game, game)
-    #BackupAgent.put(name, game)
+    BackupAgent.put(name, game)
     {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
   end
 
@@ -43,7 +42,7 @@ defmodule MemoryWeb.GamesChannel do
     name = socket.assigns[:name]
     game = Game.reverse_mismatch(socket.assigns[:game])
     socket = assign(socket, :game, game)
-    #BackupAgent.put(name, game)
+    BackupAgent.put(name, game)
     {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
   end
 
@@ -53,7 +52,7 @@ defmodule MemoryWeb.GamesChannel do
     name = socket.assigns[:name]
     game = Game.new()
     socket = assign(socket, :game, game)
-    #BackupAgent.put(name, game)
+    BackupAgent.put(name, game)
     {:reply, {:ok, %{ "game" => Game.client_view(game)}}, socket}
   end
 
