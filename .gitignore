@@ -42,3 +42,4 @@ npm-debug.log
 /config/*.secret.exs
 .idea
 .elixir_ls
+Elixir.Memory.Game.beam
