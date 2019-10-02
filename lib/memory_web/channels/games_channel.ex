@@ -1,7 +1,9 @@
 defmodule MemoryWeb.GamesChannel do
   use MemoryWeb, :channel
+
   alias Memory.Game
   alias Memory.BackupAgent
+
   # reference to nat's notes
 
   # "games:" <> name will match any string start with "games" and assign rest to name
@@ -10,11 +12,13 @@ defmodule MemoryWeb.GamesChannel do
   # at their destination.
   def join("games:" <> name, payload, socket) do
     if authorized?(payload) do
-      game = BackupAgent.get(name) || Game.new()
+      game = Game.new()
+      #game = BackupAgent.get(name) || Game.new()
+
       socket = socket
                |> assign(:game, game)
                |> assign(:name, name)
-      BackupAgent.put(name, game)
+      #BackupAgent.put(name, game)
       {:ok, %{"join" => name, "game" => Game.client_view(game)}, socket}
     else
       {:error, %{reason: "unauthorized"}}
@@ -23,10 +27,13 @@ defmodule MemoryWeb.GamesChannel do
 
   # call click
   def handle_in("click", %{"index" => ii}, socket) do
+    # Adds key/value pair to socket assigns
+    # “Assigns” is basically the data backpack of the socket or Plug.Conn connection. You’d use it to hold onto data,
+    # which you’ll need throughout the lifetime of that connection.
     name = socket.assigns[:name]
     game = Game.click(socket.assigns[:game], ii)
     socket = assign(socket, :game, game)
-    BackupAgent.put(name, game)
+    #BackupAgent.put(name, game)
     {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
   end
 
@@ -36,7 +43,7 @@ defmodule MemoryWeb.GamesChannel do
     name = socket.assigns[:name]
     game = Game.reverse_mismatch(socket.assigns[:game])
     socket = assign(socket, :game, game)
-    BackupAgent.put(name, game)
+    #BackupAgent.put(name, game)
     {:reply, {:ok, %{"game" => Game.client_view(game)}}, socket}
   end
 
@@ -46,8 +53,13 @@ defmodule MemoryWeb.GamesChannel do
     name = socket.assigns[:name]
     game = Game.new()
     socket = assign(socket, :game, game)
-    BackupAgent.put(name, game)
+    #BackupAgent.put(name, game)
     {:reply, {:ok, %{ "game" => Game.client_view(game)}}, socket}
+  end
+
+  # Add authorization logic here as required.
+  defp authorized?(_payload) do
+    true
   end
 
 end

@@ -124,7 +124,7 @@ defmodule Memory.Game do
       tiles: get_tiles_value(tiles),
       #isVisible: get_tiles_visibility(tiles),
       numGuesses: game[:num_guesses],
-      mismatch: game[:mismatch] === nil
+      mismatch: game[:mismatch] !== nil
     }
   end
 

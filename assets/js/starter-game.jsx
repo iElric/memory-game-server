@@ -28,7 +28,17 @@ class PairOfTiles extends React.Component {
 
     // set the initial state
     getView({game}) {
-        this.setState(game);
+        console.log(game);
+        this.setState(game, ()=>{console.log(this.state)});
+        this.delay(game.mismatch);
+    }
+
+    delay(mismatch) {
+        if (mismatch) {
+            setTimeout(() => {
+                this.channel.push("mismatch").receive("ok", this.getView.bind(this));
+            }, 1000)
+        }
     }
 
     renderTile(index) {
@@ -69,11 +79,6 @@ class PairOfTiles extends React.Component {
 
     handleClick(index) {
         this.channel.push("click", {index: index}).receive("ok", this.getView.bind(this));
-        if (this.state.mismatch) {
-            setTimeout(() => {
-                this.channel.push("mismatch").receive("ok", this.getView.bind(this));
-            })
-        }
     }
 
     render() {
