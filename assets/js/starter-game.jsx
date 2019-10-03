@@ -28,8 +28,8 @@ class PairOfTiles extends React.Component {
 
     // set the initial state
     getView({game}) {
-        console.log(game);
-        this.setState(game, ()=>{console.log(this.state)});
+        //console.log(game);
+        this.setState(game);
         this.delay(game.mismatch);
     }
 
@@ -61,7 +61,7 @@ class PairOfTiles extends React.Component {
     }
 
     reStart() {
-        this.channel.push("restart").receive("ok", this.receiveView.bind(this));
+        this.channel.push("restart").receive("ok", this.getView.bind(this));
     }
 
     // Control the difficulty of the game by change 24 to a smaller number
@@ -74,7 +74,7 @@ class PairOfTiles extends React.Component {
     }
 
     isCompleted() {
-        return _.reduce(this.state.tiles, (m, n) => (m !== "") && (n !== ""));
+        return _.every(this.state.tiles, (tile) => tile !== "");
     }
 
     handleClick(index) {

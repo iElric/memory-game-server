@@ -1,4 +1,16 @@
-<!-- TODO: change this html -->
-<div id="root">
-  React app loading...
+<script>
+// set the link jump in button
+// reference to https://stackoverflow.com/questions/2906582/how-to-create-an-html-button-that-acts-like-a-link
+function jumpTo() {
+    let name = document.getElementById("name-input").value;
+    window.location.href = "/game/" + name;
+}
+</script>
+
+<div>
+  <div class="start">
+      <h1>Join a Tile Game</h1>
+      <p><input type="text" id="name-input"></p>
+      <p><button id="game-start-button" onClick="jumpTo()">Click to Join</button></p>
+  </div>
 </div>

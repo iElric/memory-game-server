@@ -48,7 +48,7 @@ defmodule MemoryWeb.GamesChannel do
 
   # call restart
   # notice handle_in is handle_in/3
-  def handle_in("restart", nil, socket) do
+  def handle_in("restart", _, socket) do
     name = socket.assigns[:name]
     game = Game.new()
     socket = assign(socket, :game, game)

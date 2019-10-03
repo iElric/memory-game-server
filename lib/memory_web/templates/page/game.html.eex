@@ -3,10 +3,18 @@
  window.gameName = "<%= @game %>";
 </script>
 
+<style>
+h1 {
+    font-family: "Comic Sans MS", serif;
+    font-size: 30px;
+}
+</style>
+
 <div class="row">
   <div class="column">
   <!-- a special EEx tag for executing elixir expressions -->
-    <h1>Memory Game: <%= @game %></h1>
+    <h1>Your Name: <%= @game %></h1>
+    <!-- when call root, the react should render the page in browser -->
     <div id="root">
       <p>React app is loading...</p>
     </div>
